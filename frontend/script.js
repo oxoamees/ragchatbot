@@ -1,6 +1,6 @@
 // ---------- Config ----------
-// The FastAPI backend URL. Change this if your backend runs elsewhere.
-const BACKEND_URL = "http://127.0.0.1:8000/chat";
+// Set window.BACKEND_URL before this script to use a deployed API.
+const BACKEND_URL = window.BACKEND_URL || "http://127.0.0.1:8000/chat";
 
 // ---------- Grab elements from the page ----------
 const chatBox = document.getElementById("chat-box");
@@ -67,9 +67,10 @@ async function sendMessage() {
     thinkingBubble.textContent = data.answer;
 
   } catch (error) {
-    // Step 8: handle connection errors without showing technical details to the user
     console.error(error);
-    thinkingBubble.textContent = error.message || "Unable to connect to the chatbot backend.";
+    thinkingBubble.textContent = error.message === "Failed to fetch"
+      ? "The chatbot service is not available yet. Please start or deploy the backend."
+      : error.message || "Unable to connect to the chatbot backend.";
   }
 }
 

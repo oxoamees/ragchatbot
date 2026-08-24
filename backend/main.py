@@ -46,6 +46,11 @@ def root():
     }
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok", "ready": rag_chain is not None}
+
+
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
     """Ask a question; get an answer grounded in your indexed documents."""
