@@ -50,7 +50,14 @@ async function sendMessage() {
     });
 
     if (!response.ok) {
-      throw new Error("Backend returned status " + response.status);
+      let detail = "Backend returned status " + response.status;
+      try {
+        const errorData = await response.json();
+        detail = errorData.detail || detail;
+      } catch (parseError) {
+        // Keep the status message when the backend response is not JSON.
+      }
+      throw new Error(detail);
     }
 
     // Step 6: read the JSON response
@@ -62,7 +69,7 @@ async function sendMessage() {
   } catch (error) {
     // Step 8: handle connection errors without showing technical details to the user
     console.error(error);
-    thinkingBubble.textContent = "Unable to connect to the chatbot backend.";
+    thinkingBubble.textContent = error.message || "Unable to connect to the chatbot backend.";
   }
 }
 
