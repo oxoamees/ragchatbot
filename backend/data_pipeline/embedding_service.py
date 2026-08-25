@@ -1,24 +1,17 @@
 """
 data_pipeline/embedding_service.py
 -------------------------------------
-Responsibility: provide the embedding model used to turn text
-into vectors, wrapped the way LangChain expects.
+Responsibility: provide a lightweight 384-dimensional embedding model.
 
-Model: all-MiniLM-L6-v2 (free, runs locally, 384-dimensional vectors)
-
-NOTE: The first time this runs, it downloads the model from
-Hugging Face (a few hundred MB) and loads it into memory. That can
-take anywhere from a few seconds to a couple of minutes depending
-on your internet speed - this is normal, not a bug. After the
-first run it's cached locally and loads fast.
+FastEmbed uses ONNX Runtime instead of PyTorch, which keeps the Render
+free instance within its memory limit.
 """
 
 print("[embedding_service] Loading embedding model (first run may take a while)...")
 
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 
-# Loaded once and reused everywhere it's imported
-embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+embedding_model = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
 
 print("[embedding_service] Embedding model ready.")
 
