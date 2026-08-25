@@ -56,13 +56,7 @@ def get_vector_store():
     Get a LangChain vector store handle pointing at the existing
     Pinecone index, ready for similarity search.
     """
-    existing_indexes = [i["name"] for i in pc.list_indexes()]
-    if PINECONE_INDEX_NAME not in existing_indexes:
-        raise RuntimeError(
-            f"Pinecone index '{PINECONE_INDEX_NAME}' does not exist yet. "
-            f"Run 'python ingest.py' first to create it and load your documents."
-        )
-
+    _ensure_index_exists()
     embeddings = get_embedding_model()
     return PineconeVectorStore(
         index_name=PINECONE_INDEX_NAME,
