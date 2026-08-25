@@ -11,21 +11,23 @@ from pinecone import Pinecone, ServerlessSpec
 from langchain_pinecone import PineconeVectorStore
 from config import PINECONE_API_KEY, PINECONE_INDEX_NAME
 from data_pipeline.embedding_service import get_embedding_model
+import re
 
 pc = Pinecone(api_key=PINECONE_API_KEY)
+INDEX_NAME = re.sub(r"[^a-z0-9-]", "-", PINECONE_INDEX_NAME.lower()).strip("-")
 
 
 def _ensure_index_exists():
     """Create the Pinecone index if it doesn't exist yet."""
     existing_indexes = [i["name"] for i in pc.list_indexes()]
-    if PINECONE_INDEX_NAME not in existing_indexes:
+    if INDEX_NAME not in existing_indexes:
         pc.create_index(
-            name=PINECONE_INDEX_NAME,
+            name=INDEX_NAME,
             dimension=384,  # matches all-MiniLM-L6-v2 output size
             metric="cosine",
             spec=ServerlessSpec(cloud="aws", region="us-east-1"),
         )
-        print(f"[vector_store] Created new Pinecone index: {PINECONE_INDEX_NAME}")
+        print(f"[vector_store] Created new Pinecone index: {INDEX_NAME}")
 
 
 def index_documents(chunks):
@@ -59,6 +61,6 @@ def get_vector_store():
     _ensure_index_exists()
     embeddings = get_embedding_model()
     return PineconeVectorStore(
-        index_name=PINECONE_INDEX_NAME,
+        index_name=INDEX_NAME,
         embedding=embeddings,
     )
