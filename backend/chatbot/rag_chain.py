@@ -12,8 +12,10 @@ for beginners: retrieve -> build prompt -> ask the LLM -> return text.
 from chatbot.retriever import get_retriever
 from chatbot.llm_service import get_llm
 
-PROMPT_TEMPLATE = """Answer the question using ONLY the context below.
-If the answer is not in the context, say "I don't know based on the given context."
+PROMPT_TEMPLATE = """Answer the question clearly and helpfully.
+Use the document context below when it is available and relevant.
+If the context is empty, answer general knowledge questions using your built-in knowledge.
+Do not invent facts about the user's private documents when they are not in the context.
 
 Context:
 {context}
@@ -34,7 +36,7 @@ class RagChain:
     def ask(self, question: str) -> str:
         # Step 1: retrieve the most relevant chunks for this question
         docs = self.retriever.invoke(question)
-        context = "\n\n".join(doc.page_content for doc in docs) if docs else "No context found."
+        context = "\n\n".join(doc.page_content for doc in docs) if docs else "No document context is indexed yet."
 
         # Step 2: build the final prompt
         prompt = PROMPT_TEMPLATE.format(context=context, question=question)
