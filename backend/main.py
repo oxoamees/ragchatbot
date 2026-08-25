@@ -17,25 +17,33 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-print("[main] Starting up - building RAG chain (loading embedding model, connecting to Pinecone and Groq)...")
+print("[main] API started. RAG chain will initialize on the first chat request.")
 rag_chain = None
 startup_error = None
 
-if PINECONE_API_KEY and PINECONE_INDEX_NAME and GROQ_API_KEY:
+
+def get_rag_chain():
+    global rag_chain, startup_error
+
+    if rag_chain is not None:
+        return rag_chain
+
+    if not PINECONE_API_KEY or not PINECONE_INDEX_NAME or not GROQ_API_KEY:
+        startup_error = (
+            "Missing PINECONE_API_KEY, PINECONE_INDEX_NAME, or GROQ_API_KEY. "
+            "Add them to backend/.env and restart the server."
+        )
+        raise HTTPException(status_code=503, detail=startup_error)
+
     try:
         from chatbot.rag_chain import build_rag_chain
 
         rag_chain = build_rag_chain()
-        print("[main] Startup complete. Visit http://127.0.0.1:8000/docs")
+        return rag_chain
     except Exception as error:
         startup_error = f"{type(error).__name__}: {error}"
         print(f"[main] RAG chain unavailable: {startup_error}")
-else:
-    startup_error = (
-        "Missing PINECONE_API_KEY, PINECONE_INDEX_NAME, or GROQ_API_KEY. "
-        "Add them to backend/.env and restart the server."
-    )
-    print(f"[main] RAG chain unavailable: {startup_error}")
+        raise HTTPException(status_code=503, detail=startup_error) from error
 
 
 @app.get("/")
@@ -54,11 +62,8 @@ def health():
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
     """Ask a question; get an answer grounded in your indexed documents."""
-    if rag_chain is None:
-        raise HTTPException(status_code=503, detail=startup_error)
-
     try:
-        answer = rag_chain.ask(request.question)
+        answer = get_rag_chain().ask(request.question)
         return ChatResponse(answer=answer)
 
     except Exception as error:
