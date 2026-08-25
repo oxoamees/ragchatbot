@@ -1,6 +1,6 @@
 // ---------- Config ----------
 // Set window.BACKEND_URL before this script to use a deployed API.
-const BACKEND_URL = window.BACKEND_URL || "http://127.0.0.1:8000/chat";
+const BACKEND_URL = window.BACKEND_URL || "https://ragchatbot-api-6bmy.onrender.com/chat";
 
 // ---------- Grab elements from the page ----------
 const chatBox = document.getElementById("chat-box");
