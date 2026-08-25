@@ -23,7 +23,7 @@ def _ensure_index_exists():
     if INDEX_NAME not in existing_indexes:
         pc.create_index(
             name=INDEX_NAME,
-            dimension=384,  # matches all-MiniLM-L6-v2 output size
+            dimension=384,  # matches the FastEmbed bge-small-en-v1.5 model
             metric="cosine",
             spec=ServerlessSpec(cloud="aws", region="us-east-1"),
         )
@@ -46,7 +46,7 @@ def index_documents(chunks):
     PineconeVectorStore.from_documents(
         documents=chunks,
         embedding=embeddings,
-        index_name=PINECONE_INDEX_NAME,
+        index_name=INDEX_NAME,
     )
 
     print(f"[vector_store] Indexed {len(chunks)} chunk(s) into Pinecone.")
